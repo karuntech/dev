@@ -5,3 +5,4 @@ print("Machine Learning is Sweet!")
 
 # Print the current time
 print(datetime.datetime.now())
+current_time = datetime.datetime.now()
