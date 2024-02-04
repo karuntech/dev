@@ -24,7 +24,7 @@ def load_data(directory):
             people[row["id"]] = {
                 "name": row["name"],
                 "birth": row["birth"],
-                "movies": set()
+                "movies": set(),
             }
             if row["name"].lower() not in names:
                 names[row["name"].lower()] = {row["id"]}
@@ -38,7 +38,7 @@ def load_data(directory):
             movies[row["id"]] = {
                 "title": row["title"],
                 "year": row["year"],
-                "stars": set()
+                "stars": set(),
             }
 
     # Load stars
@@ -93,7 +93,39 @@ def shortest_path(source, target):
     """
 
     # TODO
-    raise NotImplementedError
+    print("Loaded Data")
+    print("==============")
+    # view_loaded_data()
+    
+    # We will use QueueFronteir as it implemets breadth-first search which is guranteed to find the optimal solution for a search problem
+    
+    qf = QueueFrontier()    # Initialize a Queue Frontier
+    
+    # In our search problem, nodes (vertices) will be the actors (stars) and the edges (links) will be movies.
+    # We have to start from source (first actor), use the movies as 'actions' to get to other actors. The second actor is the target.
+    # Here is the algorithm we will use:
+    # The node is already defined for us in util
+    # Initial node (source)
+    
+    sourcenode = Node(source, None, None)
+    targetnode = Node(target, None, None)
+    
+    print(f"source Actor: {sourcenode.state}")
+    print(f"target actor: {targetnode.state}")
+    
+    # Check if the target is accessible even before adding to the fronteir
+    
+    if sourcenode.state == targetnode.state:
+        return [()]
+    
+    # Initalize a forntier that has the initial node
+    qf.add(sourcenode)
+    
+    # Loop through the 
+
+    return None
+
+    # raise NotImplementedError
 
 
 def person_id_for_name(name):
@@ -133,6 +165,13 @@ def neighbors_for_person(person_id):
         for person_id in movies[movie_id]["stars"]:
             neighbors.add((movie_id, person_id))
     return neighbors
+
+
+# Add helper function to just view the data loaded
+def view_loaded_data():
+    print(f"names: {names}")
+    print(f"people: {people}")
+    print(f"movies: {movies}")
 
 
 if __name__ == "__main__":
