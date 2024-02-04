@@ -96,34 +96,63 @@ def shortest_path(source, target):
     print("Loaded Data")
     print("==============")
     # view_loaded_data()
-    
+
     # We will use QueueFronteir as it implemets breadth-first search which is guranteed to find the optimal solution for a search problem
-    
-    qf = QueueFrontier()    # Initialize a Queue Frontier
-    
+
+    qf = QueueFrontier()  # Initialize a Queue Frontier
+
     # In our search problem, nodes (vertices) will be the actors (stars) and the edges (links) will be movies.
     # We have to start from source (first actor), use the movies as 'actions' to get to other actors. The second actor is the target.
     # Here is the algorithm we will use:
     # The node is already defined for us in util
     # Initial node (source)
-    
-    sourcenode = Node(source, None, None)
-    targetnode = Node(target, None, None)
-    
-    print(f"source Actor: {sourcenode.state}")
-    print(f"target actor: {targetnode.state}")
-    
-    # Check if the target is accessible even before adding to the fronteir
-    
-    if sourcenode.state == targetnode.state:
-        return [()]
-    
-    # Initalize a forntier that has the initial node
-    qf.add(sourcenode)
-    
-    # Loop through the 
 
-    return None
+    sourcenode = Node(source, parent=None, action=None)
+    targetnode = Node(target, parent=None, action=None)
+
+
+    # Add the source node to the frontier
+    qf.add(sourcenode)
+
+    # Explored set as we expore the nodes
+    explored = set()
+
+    # Keep track of the path
+    path = []
+
+    # Keep looping until the target node is found
+    while True:
+        # If the frontier is empty, there is no solution
+        if qf.empty():
+            return None  # As per the specification
+
+        # Remove a node from the frontier Queue frontier will remove the first one that was added
+        node = qf.remove()
+
+        # If this node is the goal, we have a solution. Return the list containing movie id and actor id
+        if node.state == targetnode.state:
+            # We found the target node. Trace back to find the full path
+            step = ()
+            while node.parent is not None:
+                # A tuple of two strings is one step in the path
+                step = (node.action, node.state)
+                path.append(step)
+                node = node.parent
+            path.reverse()
+            return path
+
+        # If we didn't find the solution, add neighors to he fronteir and keep expanding the list to
+        # include the movieid and person id.
+
+        # Add this node to the explored set
+        explored.add(node.state)
+        # degrees_traveled.append
+
+        # Movie is the action and state is the actor
+        for action, state in neighbors_for_person(node.state):
+            if not qf.contains_state(state) and state not in explored:
+                child = Node(state=state, parent=node, action=action)
+                qf.add(child)
 
     # raise NotImplementedError
 
