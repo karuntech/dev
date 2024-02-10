@@ -12,7 +12,12 @@ CKnave = Symbol("C is a Knave")
 # Puzzle 0
 # A says "I am both a knight and a knave."
 knowledge0 = And(
-    # TODO
+    # If A is a Knight, he cannot be a Knave and vice versa
+    Biconditional(AKnight, Not(AKnave)),
+    # If A is a Knight, what he says cannot be true because of what is given (A can be either Knight or Knave but not both)
+    Implication(AKnight, Not(And(AKnight, AKnave))),
+    # If A is a Knave, what he says cannot be true because he lies
+    Implication(AKnave, Not(And(AKnight, AKnave)))
 )
 
 # Puzzle 1
