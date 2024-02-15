@@ -105,27 +105,43 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+        # The cells are mines if the count is equal to the number of cells in the sentence
+        if len(self.cells) == self.count:
+            return self.cells
+        
+        # raise NotImplementedError
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        raise NotImplementedError
+        
+        # Cells are safe if the count is 0
+        
+        if self.count == 0:
+            return self.cells
+        # raise NotImplementedError
 
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            # the cell is a mine. Remove from the setence, and reduce the count
+            self.cells.remove(cell)
+            self.count -= 1
+        # raise NotImplementedError
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            # the cell is safe. Remove from the sentence
+            self.cells.remove(cell)
+        # raise NotImplementedError
 
 
 class MinesweeperAI():
@@ -182,7 +198,36 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+        
+        # Mark the cell as a move that has been made
+        self.moves_made.add(cell)
+        
+        # Mark the cell as safe
+        self.mark_safe(cell)
+        
+        # Add a new sentence to the AI's knowledge base
+        # Form the sentence with the neigboring cells and the count
+        # Neighbors are within one row and one column.
+        neighbors = set()
+        for i in range(cell[0] - 1, cell[1] + 2 ):
+            for j in range(cell[1] - 1, cell[1] + 2):
+                # ignore the cell itself as we are only interested in the neighbors
+                if (i, j) == cell:
+                    continue
+                # ignore the cell if it is a mine or a safe
+                if (i,j) in self.mines or (i,j) in self.safes:
+                    continue
+                if 0 <= i < self.height and 0 <= j < self.width:
+                    neighbors.add((i,j))
+        
+        new_knowledge = Sentence(neighbors, count)
+        self.knowledge.append(new_knowledge)
+        
+        # Now that we've added new knowledge, we need to see if it is possible to infer anything.
+        
+        
+        
+        # raise NotImplementedError
 
     def make_safe_move(self):
         """
