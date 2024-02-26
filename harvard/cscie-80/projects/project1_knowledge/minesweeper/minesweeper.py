@@ -104,14 +104,12 @@ class Sentence():
     def known_mines(self):
         """
         Returns the set of all cells in self.cells known to be mines.
-        """
-        
-        # The cells are mines if the count is equal to the number of cells in the sentence
+        """        
+        # Check if count is equal to the number of cells
         if len(self.cells) == self.count:
             return self.cells
         else:
             return set()
-
 
     def known_safes(self):
         """
@@ -198,74 +196,75 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        
-        self.printStatus()  # For debugging purposes
-        
+
+        # self.printStatus()  # For debugging purposes
+
         # 1) Mark the cell as a move that has been made
 
         self.moves_made.add(cell)
 
         # 2) Mark the cell as safe
-        
+
         self.mark_safe(cell)
 
         #  3) Add a new setence based the cell clicked and the count revealed
         neighbors = set()
-        count_in_new_knowledge = count  # Use a temporary count variable as we may have to change the count if the neighbor is already known.
-        for i in range(cell[0] - 1, cell[0] + 2 ):
+        count_in_new_knowledge = count
+        for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
                 # ignore the cell itself as we are only interested in the neighbors
                 if (i, j) == cell:
                     continue
                 # ignore the cell if it has already been determined as a mine or as a safe
-                if (i,j) in self.mines:
+                if (i, j) in self.mines:
                     count_in_new_knowledge -= 1
                     continue
-                if (i,j) in self.safes:
+                if (i, j) in self.safes:
                     continue
-                if 0 <= i < self.height and 0 <= j < self.width: # i and j must be within the board boundaries
-                    neighbors.add((i,j))
+                if 0 <= i < self.height and 0 <= j < self.width:
+                    neighbors.add((i, j))
 
         # Form a sentence based on the neighbors and count
         new_knowledge = Sentence(neighbors, count_in_new_knowledge)
         self.knowledge.append(new_knowledge)
 
         # 4) Mark any additional cells as safes are mines
-        while(True):
-            safes_found = False # Boolean to keep track of safes
-            mines_found = False # Boolean to keep track of mines
+        while (True):
+            safes_found = False
+            mines_found = False
             for sentence in self.knowledge:
-                if(sentence.known_safes()):    # Safes found
+                if sentence.known_safes():    # Safes found
                     for cell in list(sentence.known_safes()):
                         self.mark_safe(cell)
                         safes_found = True
-                if(sentence.known_mines()):    # Mines found
+                if sentence.known_mines():    # Mines found
                     for cell in list(sentence.known_mines()):
                         self.mark_mine(cell)
                         mines_found = True
 
-        # 5) Add any new sentences to the knowledge if possible
-        
-            new_sentence_formed = False # Boolean to keep track of updates
+            # 5) Add any new sentences to the knowledge if possible
+
+            new_sentence_formed = False
 
             for sentence1 in self.knowledge:
-                if sentence1.cells: # Ignore if the sentence is empty
+                if sentence1.cells:  # Ignore if the sentence is empty
                     for sentence2 in self.knowledge:
-                        if sentence2.cells: # Ignore if the sentence is empty
+                        if sentence2.cells:  # Ignore if the sentence is empty
                             if sentence1.cells != sentence2.cells and sentence1.cells.issubset(sentence2.cells):
-                                # subset found, let's make a new sentence
+                                # Subset found, let's make a new sentence
                                 new_knolwedge = Sentence(
                                     sentence2.cells - sentence1.cells,
                                     sentence2.count - sentence1.count,
                                 )
                                 self.knowledge.append(new_knolwedge)
-                                self.knowledge.remove(sentence2) # Remove the bigger set from the knowledge, otherwise it can cause infinite loop
+                                # Remove the bigger set from the knowledge, otherwise it can cause infinite loop
+                                self.knowledge.remove(sentence2) 
                                 new_sentence_formed = True
-
-            if not (safes_found or mines_found or new_sentence_formed): # Only if all the three conditions are false, break out of this loop
-                self.printStatus()
+                                                             
+            # Only if all the three conditions are false, break out of this loop
+            if not (safes_found or mines_found or new_sentence_formed):
+                # self.printStatus()
                 break
-
 
     def make_safe_move(self):
         """
@@ -294,7 +293,7 @@ class MinesweeperAI():
         total_possible_moves_in_board = set()
         for i in range(self.height):
             for j in range(self.width):
-                total_possible_moves_in_board.add((i,j))
+                total_possible_moves_in_board.add((i, j))
 
         eligible_moves = total_possible_moves_in_board - moves_not_eligible
         if eligible_moves:
