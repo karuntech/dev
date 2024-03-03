@@ -292,7 +292,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
         p_no_trait_all_members_in_set = p_no_trait_all_members_in_set * p_no_trait
 
-    # No multiply al the probablities.
+    # Now multiply all the probablities.
 
     joint_probability_value = (
         p_one_gene_all_members_in_set
