@@ -139,37 +139,17 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    # raise NotImplementedError
-    print(f"One Gene:", one_gene)
-    print(f"Two Genes:", two_genes)
-    print(f"Have Trait:", have_trait)
-    print(f"------------")
 
     # 1) One gene
     p_one_gene_all_members_in_set = 1
     for person in one_gene:
-        print(f"Computing probability for {person} to have one gene")
         # if this person is a parent, just use the probablity from the PROBS dictionary (unconditional)
         if people[person]["mother"] == None:
             p_one_gene = PROBS["gene"][1]
         else:
             # Determine the mother's and father's gene count from the arguments
-            mother_gene = 0
-            father_gene = 0
-            if people[person]["mother"] in one_gene:
-                mother_gene = 1
-            elif people[person]["mother"] in two_genes:
-                mother_gene = 2
-            else:
-                mother_gene = 0
-
-            if people[person]["father"] in one_gene:
-                father_gene = 1
-            elif people[person]["father"] in two_genes:
-                father_gene = 2
-            else:
-                father_gene = 0
-
+            mother_gene, father_gene = retrieve_parents_gene(people, one_gene, two_genes, person)
+            
             # What are the chances for this person to have 1 gene?
             # He can get one from mother and none from father or one from father and none from mother
             # One from mother and none from Father
@@ -219,27 +199,12 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     # 2) Two genes
     p_two_gene_all_members_in_set = 1
     for person in two_genes:
-        print(f"Computing probability for {person} to have two genes")
         # if this person is parent, just use the probablity from the PROBS dictionary (unconditional)
         if people[person]["mother"] == None:
             p_two_genes = PROBS["gene"][2]
         else:
-            # Determine the mother's and father's gene count from the arguments. Need to move this to function
-            mother_gene = 0
-            father_gene = 0
-            if people[person]["mother"] in one_gene:
-                mother_gene = 1
-            elif people[person]["mother"] in two_genes:
-                mother_gene = 2
-            else:
-                mother_gene = 0
-
-            if people[person]["father"] in one_gene:
-                father_gene = 1
-            elif people[person]["father"] in two_genes:
-                father_gene = 2
-            else:
-                father_gene = 0
+            # Determine the mother's and father's gene count from the arguments.
+            mother_gene, father_gene = retrieve_parents_gene(people, one_gene, two_genes, person)
 
             # What are the changes this person will have two genes?
             # The person should receive one from each parent
@@ -266,7 +231,6 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     # 3) Have Trait
     p_have_trait_all_members_in_set = 1
     for person in have_trait:
-        print(f"Computing probability for {person} to have the trait")
         # Trait is affected by the number of genes this person has
         if person in one_gene:
             p_no_of_gene = 1
@@ -283,27 +247,12 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     persons_not_in_gene_arguments = set(people.keys()) - (one_gene.union(two_genes))
     p_no_genes_all_members_in_set = 1
     for person in persons_not_in_gene_arguments:
-        print(f"Computing probability for {person} to have no genes")
         # if this person is parent, just use the probablity from the PROBS dictionary (unconditional)
         if people[person]["mother"] == None:
             p_no_gene = PROBS["gene"][0]
         else:
-            # Determine the mother's and father's gene count from the arguments.( Move this to a function)
-            mother_gene = 0
-            father_gene = 0
-            if people[person]["mother"] in one_gene:
-                mother_gene = 1
-            elif people[person]["mother"] in two_genes:
-                mother_gene = 2
-            else:
-                mother_gene = 0
-
-            if people[person]["father"] in one_gene:
-                father_gene = 1
-            elif people[person]["father"] in two_genes:
-                father_gene = 2
-            else:
-                father_gene = 0
+            # Determine the mother's and father's gene count from the arguments
+            mother_gene, father_gene = retrieve_parents_gene(people, one_gene, two_genes, person)
 
             # What are the chances this person will have 0 genes.
             # He has to receive none from each of the parent
@@ -331,7 +280,6 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     persons_not_in_trait_arguments = set(people.keys()) - have_trait
     p_no_trait_all_members_in_set = 1
     for person in persons_not_in_trait_arguments:
-        print(f"Computing probability for {person} to have no trait")
         # Trait is affected by the number of genes this person has
         if person in one_gene:
             p_no_of_gene = 1
@@ -358,18 +306,6 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
     return joint_probability_value
 
-    # Determine the persons for which we need to compute No genes and No traits
-    # pretty completed
-    # when you map it out.. may be simply it
-    # lot of different cases.. based on who the mother.. and father and count
-    # group it together more clean to read
-    # conider than
-
-    # mutation is related to gene count
-
-    # Take a borad approach, and then work through the logic
-    # all the differnt cases.. try to work out smaller
-
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
     """
@@ -378,7 +314,6 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    # raise NotImplementedError
     for person in probabilities:
         # Update gene distribution
         for g_person in one_gene:
@@ -391,21 +326,27 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
         for t_person in have_trait:
             if t_person == person:
                 probabilities[person]["trait"][True] += p
+        # Update no genes
+        if not (person in one_gene or person in two_genes):
+            probabilities[person]["gene"][0] += p
+        # update no trait
+        if not person in have_trait:
+            probabilities[person]["trait"][False] += p
+
 
 def normalize(probabilities):
     """
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    # raise NotImplementedError
     # Normalize gene
     for person in probabilities:
-        p_gene_1 = person["gene"][1]
-        p_gene_2 = person["gene"][2]
-        p_gene_0 = person["gene"][0]
+        p_gene_1 = probabilities[person]["gene"][1]
+        p_gene_2 = probabilities[person]["gene"][2]
+        p_gene_0 = probabilities[person]["gene"][0]
         ratio_1_2 = p_gene_2 / p_gene_1
         ratio_1_0 = p_gene_0 / p_gene_1
-        new_p_gene_1 = 1 / ( 1 + ratio_1_2 + ratio_1_0 )
+        new_p_gene_1 = 1 / (1 + ratio_1_2 + ratio_1_0)
         new_p_gene_2 = ratio_1_2 * new_p_gene_1
         new_p_gene_0 = ratio_1_0 * new_p_gene_1
         probabilities[person]["gene"][1] = new_p_gene_1
@@ -415,15 +356,41 @@ def normalize(probabilities):
     # Normalie trait
     for person in probabilities:
         # Find the relative propotion of True and False
-        p_true = person["trait"][True]
-        p_false = person["trait"][False]
+        p_true = probabilities[person]["trait"][True]
+        p_false = probabilities[person]["trait"][False]   
+        if p_true == 0:
+            # Division by 0 catch
+            probabilities[person]["trait"][False] = 1.0000
+            continue
         ratio = p_false / p_true
-        # For the probabilities to sum to 1 propotionally
         new_p_true = 1 / (1 + ratio)
         new_p_false = ratio * new_p_true
         probabilities[person]["trait"][True] = new_p_true
         probabilities[person]["trait"][False] = new_p_false
 
 
+def retrieve_parents_gene(people, one_gene, two_genes, person):
+    """
+    Helper function to retrieve parents's gene count from the arguments to the joint_probability function
+    """
+    mother_gene = 0
+    father_gene = 0
+    if people[person]["mother"] in one_gene:
+        mother_gene = 1
+    elif people[person]["mother"] in two_genes:
+        mother_gene = 2
+    else:
+        mother_gene = 0
+
+    if people[person]["father"] in one_gene:
+        father_gene = 1
+    elif people[person]["father"] in two_genes:
+        father_gene = 2
+    else:
+        father_gene = 0
+        
+    return mother_gene, father_gene
+    
+    
 if __name__ == "__main__":
     main()
