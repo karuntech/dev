@@ -1,0 +1,122 @@
+Notes to make sense of the problem.
+
+1. Each person carries 0, 1 or 2 genes <-- this is the hidden state
+    For example, the probability distribution:
+    P(gene=0) = 0.96
+    P(gene=1) = 0.03
+    P(gene=2) = 0.01
+    P(gene) = <0.96, 0.03, 0.01>
+
+2. Each person has a trait or no trait <-- This is something we can observe (evidence)
+    For example, the probability distribution
+    P(trait=yes) = 0.2
+    P(trait=no) = 0.8
+    P(trait) = <0.2, 0.8>
+    
+    It turns out that the trait depends on the number of genes.
+    P(trait | gene=0) = <0.01, 0.99>
+    P(trait | gene=1) = <0.56, 0.44>
+    P(trait | gene=2) = <0.65, 0.35>
+
+    So, to caluclate the probability of someone showing the trait, is pretty straight forward
+    just get it from the given probablities IF THE GENES ARE UNCONDITIONAL
+    P(trait=yes and gene=0) + P(trait=yes and gene=1) + P(trait=yes, gene=2)
+    P(traint=no and gene=0) + P(traint=no and gene=1) + P(trait=no, gene=2)
+    To normalize, multiply the distribution propotionally so that they sum up to 1.
+    alpha<x, y> => <X,Y>
+
+3. A child inherits one gene from each parent
+    If a parent has two genes, he/she will pass one gene with 100% probability
+    If a parent has one gene, he/she will pass one gene with 50% probability
+    If a parent has no genes, he/she will pass one gene with 0% probability (i.e he/she will not pass the gene)
+
+    In addition, there is a probability of 1% mutation which will inverse the state of the gene
+    i.e change from a version of the gene that causes hearing impairment to a version that doesn't and vice versa.
+
+    How to do you combine both the parent's gene are are passed?
+    Consider this example:
+    Lily has 0 genes
+    James has 2 genes
+    Harry is their son. What is the probability that Harry will receive one gene?
+
+    Everyone recieves one gene from each parent.
+    So, Harry can get one from Lily AND not from James OR one from James AND none from Lily 
+    Lily has 0 genes, probabilty of her passing the gene is 0. But there is a 1% mutation chance.
+    So, probabilty of Lily passing the gene (so that Harry can have one) is .01.
+    What is the probability of James not passing one?
+    Since Jameas has 2 genes, he will pass one to Harry with 100% probability. With 1% mutation (.01), harry will
+    not recieve anything. So, 1 * .01 = .01.
+    So, the probability of Harry receiving 1 gene in this senario (one from Lily and none from James) is .01 * .01
+
+    Probablity of Lily not passing one to Harry: 100% chance that Lilly will not pass it, and there is 99% chance that 
+    it will not mutate. So, 1 * .99 = .99. James has two. So, there is 100% chance that he will pass 1, and 99% chance
+    that it will not muatate. So, 1 * .99 = .99. So, the probability of LIly not passing and James passing one is .99 * .99
+
+    The probability of Lily passing and James not passing OR Lily not passing and James passing = (.01 * .01) + (.99 *.99) = .99
+
+    Note that this is just one scenario. To compuete P(gene=1) for Harry, we need to compuete:
+    P(gene=1 and Lily=0 and James=0) + P(gene=1 and Lily=1 and James=0)...and so on
+
+    Consider this people dictionary (based on family0.csv)
+{
+  'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+  'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+  'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+}
+Note that the csv file only has the trait (observable).
+As we are looping through various scenarios, consider the following call to joint_probablity
+joint_probablity(people, {"Harry"}, {"James"}, {"James"})
+What are you asked to calculate?
+The joint probability of;
+Harry having one gene (P(gene=1)) and
+James having two genes P(gene=2) and
+James showing the trait P(trait=yes) and
+Lily not having any genes P(gene=0) and
+Lily not showing trait (P(trait=no)) and
+Harry not showing trait P(trait=no)
+Better to group them by persons:
+
+Harry having one gene and not showing trait
+James having two genes and showing the trait
+Lily having 0 genes and not showing the trait
+ORDER does not matter.
+
+Lily:
+p(a and b) = p(a | b) * p(b) = .99 * .96 = 0.9504
+
+James:
+P(show trait and two genes) = P(show trait given two genes) * p (two genes) = .65 * .01 = .0065
+
+Harry:
+one gene and not showing the trait.
+first, calculate one gene:
+    Two ways. Get the gene from Lily and not from James OR get the gene from James and not from Lily
+    You can add the above two (since it is OR)
+    get the gene from lily and not from James
+        Lily has 0. with mutation .01
+        James has 2 1 * .01 = .01
+        .01 * .01 = 0.0001
+    get from james and not from lily
+        1 * .99 = .99
+        1 * .99 = .99
+        .99 * .99 = .9801
+    .01 + .9801 = 0.9802
+
+    0.9802
+
+Harry not showig trait:
+ P(trait=false and gene=1) = p(trait = false given gene=1) * p(gene=1)
+                            = .44
+
+    .9802 * .44 = 0.431288
+
+Then multiply everything.
+0.9504 * .0065 * 0.431288 = 0.002664
+
+
+
+
+
+
+
+    
