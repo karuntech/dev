@@ -234,7 +234,17 @@ class CrosswordCreator():
         if len(all_words_set) != len(all_words_list):
             return False
 
-        return True        
+        # Check for conflicts.i.e overlaps agree
+        for var1, value1 in assignment.items():
+            for var2, value2 in assignment.items():
+                if var1 == var2:
+                    continue
+                if self.crossword.overlaps[var1, var2] is not None:
+                    i, j = self.crossword.overlaps[var1, var2]
+                    if value1[i] != value2[j]:
+                        return False
+
+        return True
 
     def order_domain_values(self, var, assignment):
         """
@@ -259,13 +269,12 @@ class CrosswordCreator():
                         if value[i] != neighbor_value[j]:
                             eliminate_values += 1
             value_list.append((value, eliminate_values))
-        
+
         # Sort the list
         sorted_value_list = sorted(value_list, key=lambda x: x[1])
         ordered_domain_values = [item[0] for item in sorted_value_list]
-        
+
         return ordered_domain_values
-                            
 
     def select_unassigned_variable(self, assignment):
         """
@@ -286,11 +295,12 @@ class CrosswordCreator():
         value_list = []
         for var in avaialble_variables:
             value_list.append((var, len(self.domains[var]), len(self.crossword.neighbors(var))))
-        
-        sorted_value_list = sorted(value_list, key=lambda x: x[1])
-        
+
+        # Sort the list by number of values in ascending order, and the degrees by decending order.
+        sorted_value_list = sorted(value_list, key=lambda x: (x[1], -x[2]))
+
         return sorted_value_list[0][0]
-        
+
     def backtrack(self, assignment):
         """
         Using Backtracking Search, take as input a partial assignment for the
