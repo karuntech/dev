@@ -100,22 +100,13 @@ class CrosswordCreator():
         (Remove any values that are inconsistent with a variable's unary
          constraints; in this case, the length of the word.)
         """
-
-        # print(f"Before enforcing node consistency:")
-        # for variable, values in self.domains.items():
-        #     print(f"{variable} {values}")
-        # print(f"Enforcing node consistency ...")
-
+        
+        # Check the variable's length with the the word's length
         for variable, words in self.domains.items():
             words_as_list = list(words) # To remove members from a set while iterating over it.
             for word in words_as_list:
                 if variable.length != len(word):
                     self.domains[variable].remove(word)
-
-        # print(f"After enforcing node consistency:")
-        # for variable, values in self.domains.items():
-        #     print(f"{variable} {values}")
-        # print(f"Done")
 
     def revise(self, x, y):
         """
@@ -127,24 +118,21 @@ class CrosswordCreator():
         False if no revision was made.
         """
         # Loop through every value of x
-        print(f"Revising {x} and {y}")
-        print(f"-------------------")
         revised = False
         words_in_x_list = list(self.domains[x])
         for word_in_x in words_in_x_list:
-            if self.crossword.overlaps[x, y] is not None: # Process only the overalapping words
+            if self.crossword.overlaps[x, y] is not None:  # Process only the overalapping words
+                # Check if there is a value in y's domain for x
                 y_corresponding_x = False
                 for word_in_y in self.domains[y]:
                     # check if a corresponding word exists in y that does not cause a conflict
                     i, j = self.crossword.overlaps[x, y]
-                    if word_in_x[i] == word_in_y[j]: # Overlapping word found
+                    if word_in_x[i] == word_in_y[j]:  # Overlapping word found
                         y_corresponding_x = True
                         break   # We can skip the next y values
                 if not y_corresponding_x:   # No possible values found in y corresponding to x
-                    print(f"Removing {word_in_x} in {self.domains[x]} because it is not arc consistent with {self.domains[y]} ")
                     self.domains[x].remove(word_in_x)
                     revised = True
-        print(f"Returning {revised}")
         return revised 
 
     def ac3(self, arcs=None):
@@ -156,14 +144,10 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        print(f"Running ac3 for arch consistency:")
-        # for variable, values in self.domains.items():
-        #     print(f"{variable} | {values}")
 
         arcs_queue = []
 
         # Find overallping variables and add them to the arcs_queue list
-
         if arcs is None:
             for x in self.domains.keys():
                 for y in self.domains.keys():
@@ -174,22 +158,17 @@ class CrosswordCreator():
         else:
             arcs_queue = arcs
 
-        # print(f"Inital set of arcs: {arcs_queue}")
         while arcs_queue:
             x, y = arcs_queue.pop(0)
             # Call revise to make x arc consitent with y
             if self.revise(x, y):
-                if not self.domains[x]: # Empth set. TBD. See if you need to check the size
+                if not self.domains[x]:  # Empth set. We didn't revise
                     return False
-                neighbors = self.crossword.neighbors(x).discard(y)
+                neighbors = self.crossword.neighbors(x)
+                neighbors.remove(y)
                 if neighbors:
                     for z in neighbors:
-                        print(f"Adding neighbor")
-                        arcs_queue.append(z, x)
-
-        print(f"After running ac3:")
-        for variable, values in self.domains.items():
-            print(f"{variable} {values}")
+                        arcs_queue.append((z, x))
 
         return True
 
@@ -200,7 +179,6 @@ class CrosswordCreator():
         """
 
         # Return false if assignment does not have all the variables
-
         if len(self.domains.keys()) != len(assignment.keys()):
             return False
 
@@ -216,25 +194,19 @@ class CrosswordCreator():
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        # If the assignment is not complete, return False
-
-        # if not self.assignment_complete(assignment):
-        #     return False
 
         # Check if every value is of correct length
-
         for variable, word in assignment.items():
             if variable.length != len(word):
                 return False
 
-        # Check if all the values are unique. Use a set as set will only store unique values
-
+        # Check if all the values are unique. Use a set as a set will only store unique values
         all_words_set = set(assignment.values())
         all_words_list = list(assignment.values())
         if len(all_words_set) != len(all_words_list):
             return False
 
-        # Check for conflicts.i.e overlaps agree
+        # Check for conflicts.i.e overlaps don't agree
         for var1, value1 in assignment.items():
             for var2, value2 in assignment.items():
                 if var1 == var2:
@@ -256,22 +228,24 @@ class CrosswordCreator():
 
         neighbors = list(self.crossword.neighbors(var))
 
-        # Create a list of values along with the number of values it eliminates
+        # Create a list of values along with the number of values it rules out
         value_list = []
 
         for value in self.domains[var]:
             eliminate_values = 0
-            # overlaps
+            # Loop through each neighbour and it's overlaps
             for neighbor in neighbors:
-                if neighbor not in assignment:
+                if neighbor not in assignment: 
                     i, j = self.crossword.overlaps[var, neighbor]
                     for neighbor_value in self.domains[neighbor]:
                         if value[i] != neighbor_value[j]:
                             eliminate_values += 1
             value_list.append((value, eliminate_values))
 
-        # Sort the list
+        # Sort the list based on the number of values it rules out
         sorted_value_list = sorted(value_list, key=lambda x: x[1])
+        
+        # Return the values
         ordered_domain_values = [item[0] for item in sorted_value_list]
 
         return ordered_domain_values
@@ -285,12 +259,7 @@ class CrosswordCreator():
         return values.
         """
 
-        # Unassigned variables are variables that are not in the assignement dictionary
-        # for variable in self.domains.keys():
-        #     if variable not in assignment:
-        #         return variable
-
-        # Create a list of all avaialble variables along with the number of values in its domain
+        # Create a list of all avaialble variables along with the number of values in its domain, and its degree
         avaialble_variables = [var for var in self.domains.keys() if var not in assignment]
         value_list = []
         for var in avaialble_variables:
@@ -311,33 +280,18 @@ class CrosswordCreator():
         If no assignment is possible, return None.
         """
 
-        print()
-        print(f"********* Backtrack search ***********")
-        print(f"Checking if the assignment is complete...")
         if self.assignment_complete(assignment):
-            print(f"Assignment Complete using Backtracking")
             return assignment
-        print(f"Assignment not complete. Grab an unassigned variable by calling selec_unassigned_variable")
 
         variable = self.select_unassigned_variable(assignment)
-        print(f"Variable selected: ", variable)
 
-        print(f"Looping through values for {variable} by calling order_domain_values")
         for value in self.order_domain_values(variable, assignment):
-            print(f"Value selecte {value}")
-            print(f"Make a copy of assignment so that we don't update the original assignment")
             new_assignment = assignment.copy()
-            print(f"Add the variable to the assignement with the value")
             new_assignment[variable] = value
-            print(f"Check if the assignement is consistent i.e fully done")
             if self.consistent(new_assignment):
-                print(f"Nice. It is consistent. Call backtrack again with this new assignment to pick the next variable")
                 result = self.backtrack(new_assignment)
                 if result is not None:
                     return result
-            else:
-                print(f"Not consistent with the new assignment")
-
         return None
 
 
