@@ -1,0 +1,17 @@
+shopping
+k nearest neighbors
+
+sensitivit - positive rate
+
+false negative. is positiove that we incorrect guessed as positive
++p/+p+fn
+
+specificity - negative rate
++n/+n+fp
+
+
+
+
+nim
+q-learning
+

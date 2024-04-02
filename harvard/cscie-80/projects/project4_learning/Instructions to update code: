@@ -1,0 +1,35 @@
+Instructions to update code:
+
+0. Make sure github is updated with latest code
+1. Download the code as zip file. You will have Game-Day-Grill-main.zip
+
+
+    In AWS server, the Game-Day-Grill will be under bitnami@ip-172-26-14-214:/opt/bitnami/apps/django/django-projects/
+
+ 3. Open filezilla to transfer files to aws
+ protocol: SFTP
+ host: 3.87.27.204
+ Logon type: Key file
+ user: bitnami
+ Key file: will forward via email
+
+ 4. Connect to Django instance via lightsail browser  based ssh (you will need aws console access)
+ 5. Stop django by running the command
+ 	pkill -f manage.py
+ 6. cd /opt/bitnami/apps/django/django-projects
+ 7. Move the current project directory to some place else. For example, to home dir.
+ mv Game-Day-Grill /home/bitnami/
+ 8. Using file zilla copy the Game-Day-Grill directory and its contents to /opt/bitnami/apps/django/django-projects. (Drag and drop the dir Game-Day-Grill in FileZilla)
+ 9. cd /opt/bitnami/apps/django/django-projects/Game-Day-Grill/gamedaygrill
+ 10. virtualenv -p python3 pipenv
+ 11 source pipenv/bin/activate
+ 12.0 pip install Django
+ 12.  pip install Pillow 
+ 10. Update /opt/bitnami/apps/django/django-projects/Game-Day-Grill/gamedaygrill/g
+amedaygrill/settings.py and add the public ip 3.87.27.204
+ ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1', '.now.sh', '3.87.27.204']
+
+
+
+
+
