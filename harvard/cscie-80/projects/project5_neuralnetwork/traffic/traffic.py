@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 EPOCHS = 10
 IMG_WIDTH = 30
 IMG_HEIGHT = 30
-NUM_CATEGORIES = 43
-# NUM_CATEGORIES = 3  # Smaller data set
+# NUM_CATEGORIES = 43
+NUM_CATEGORIES = 3  # Smaller data set
 TEST_SIZE = 0.4
 
 
@@ -37,7 +37,7 @@ def main():
 
     # Evaluate neural network performance
     model.evaluate(x_test,  y_test, verbose=2)
-
+    
     # Save model to file
     if len(sys.argv) == 3:
         filename = sys.argv[2]
@@ -93,7 +93,7 @@ def get_model():
             # Convolutional layer. Learn 32 filters using a 3x3 kernel
             tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
             # Add additional convlutional layer
-            tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
+            # tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
             # Max-pooling layer, using 2x2 pool size
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             # Flatten units ss
@@ -101,7 +101,7 @@ def get_model():
             # Add a hidden layer with dropout
             tf.keras.layers.Dense(256, activation="relu"),
             # Add additional layer
-            tf.keras.layers.Dense(256, activation="relu"),
+            # tf.keras.layers.Dense(256, activation="relu"),
             # tf.keras.layers.Dense(128, activation="relu"),
             tf.keras.layers.Dropout(0.5),
             # Add an output layer with output units for all categories
@@ -115,6 +115,8 @@ def get_model():
         loss="categorical_crossentropy",
         metrics=["accuracy"]
     )
+    
+    # print(model.summary())
     
     return model
 
