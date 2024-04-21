@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 EPOCHS = 10
 IMG_WIDTH = 30
 IMG_HEIGHT = 30
-# NUM_CATEGORIES = 43
-NUM_CATEGORIES = 3  # Smaller data set
+NUM_CATEGORIES = 43
+# NUM_CATEGORIES = 3  # Smaller data set
 TEST_SIZE = 0.4
 
 
@@ -63,17 +63,16 @@ def load_data(data_dir):
     # Read each image inside the data directory as numpy.ndarray
     # The images will need to be resized to be of the same size
 
-    # Loop through each directory under the data directory.
     images = []
     labels = []
 
-    for category in range(0, NUM_CATEGORIES - 1 ):
+    # Loop through each directory under the data directory.
+
+    for category in range(0, NUM_CATEGORIES):
         imgdir = os.path.join(data_dir, str(category))
         for imgfile in os.listdir(imgdir):
-            print(f"Processing image {imgfile}")
             img = cv2.imread(imgdir + os.sep + imgfile)
             resized_image = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
-            # print(f"Resized image size: {resized_image.shape}")
             img_ndarray = np.array(resized_image)
             images.append(img_ndarray)
             labels.append(category)
@@ -87,8 +86,37 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    
 
+    # Create a convolutional neural network
+    model = tf.keras.models.Sequential(
+        [
+            # Convolutional layer. Learn 32 filters using a 3x3 kernel
+            tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+            # Add additional convlutional layer
+            tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
+            # Max-pooling layer, using 2x2 pool size
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            # Flatten units ss
+            tf.keras.layers.Flatten(),
+            # Add a hidden layer with dropout
+            tf.keras.layers.Dense(256, activation="relu"),
+            # Add additional layer
+            tf.keras.layers.Dense(256, activation="relu"),
+            # tf.keras.layers.Dense(128, activation="relu"),
+            tf.keras.layers.Dropout(0.5),
+            # Add an output layer with output units for all categories
+            tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax"),
+        ]
+    )
+    
+    # Train neural network
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+    
+    return model
 
 if __name__ == "__main__":
     main()
