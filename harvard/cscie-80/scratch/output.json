@@ -1,0 +1,29 @@
+2024-04-28 05: 15: 22 INFO {'visibility': 'visible', 'stdout_visibility': 'visible', 'tests': [
+        {'name': 'parser.py exists', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'parser.py imports', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'preprocess tokenizes words', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'preprocess converts words to lowercase', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'preprocess removes tokens without alphabetic characters', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'parser can parse simple sentence', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'parser can parse more complex sentences', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'parser avoids over-generalizing to syntactically incorrect sentences', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': 'np_chunk identifies noun phrase', 'visibility': 'visible', 'status': 'passed'
+        },
+        {'name': "np_chunk finds noun phrases that don't contain other noun phrases", 'visibility': 'visible', 'status': 'failed', 'output': 'expected "{\'the home\', \'...", not "{\'the home\', \'..."'
+        },
+        {'name': 'style50 (aesthetics) [./style50_check/parser.py
+            ]', 'visibility': 'visible', 'status': 'passed', 'output': 'Looks good!'
+        },
+        {'name': 'style50 (comments) - [./style50_check/parser.py
+            ]', 'visibility': 'visible', 'output': 'Looks good!', 'status': 'passed'
+        }
+    ], 'score': 9.25
+}

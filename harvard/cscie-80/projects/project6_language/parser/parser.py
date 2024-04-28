@@ -15,8 +15,16 @@ V -> "smiled" | "tell" | "were"
 """
 
 NONTERMINALS = """
-S -> N V
+S -> NP VP
+
+AP -> Adj | Adj AP
+PP -> P NP
+CP -> Conj | Conj N
+NP -> N | CP N | Det N | Det AP N | NP PP
+VP -> V | VP Adv | Adv VP | V NP | VP PP | VP CP VP
+
 """
+
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
 parser = nltk.ChartParser(grammar)
@@ -36,6 +44,7 @@ def main():
     # Convert input into list of words
     s = preprocess(s)
 
+    
     # Attempt to parse sentence
     try:
         trees = list(parser.parse(s))
@@ -62,7 +71,17 @@ def preprocess(sentence):
     and removing any word that does not contain at least one alphabetic
     character.
     """
-    raise NotImplementedError
+    
+    # Convert sentense to lower case
+    sentence = sentence.lower()
+    
+    # Tokennize the sentence
+    list_of_words = nltk.tokenize.word_tokenize(sentence)
+    
+    # Loop through the list, remove words without at least one alphabetic chracter
+    cleaned_list_of_words = [ word for word in list_of_words if containsAlpha(word)]
+    
+    return cleaned_list_of_words
 
 
 def np_chunk(tree):
@@ -72,8 +91,27 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    raise NotImplementedError
+    
+    # Traverse through the nltk tree and check the label
+    # Loop through recursively
+    
+    list_of_np_chunks = []
+    if isinstance(tree, nltk.Tree):
+        # If the label is "NP" and any subtrees do not contain "NP" within it, add the tree to the list of chunks
+        if tree.label() == "NP" and not any(subtree.label() == "NP" for subtree in tree):
+            list_of_np_chunks.append(tree)
+        for subtree in tree:
+            list_of_np_chunks.extend(np_chunk(subtree))
+            
+    return list_of_np_chunks
 
+
+def containsAlpha(word):
+    """
+    Returns true if the word contains at least one alphabet.
+    False otherwise.
+    """
+    return any(char.isalpha() for char in word)
 
 if __name__ == "__main__":
     main()
