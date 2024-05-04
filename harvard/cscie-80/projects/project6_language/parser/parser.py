@@ -22,7 +22,6 @@ PP -> P NP
 CP -> Conj | Conj N
 NP -> N | CP N | Det N | Det AP N | NP PP
 VP -> V | VP Adv | Adv VP | V NP | VP PP | VP CP VP
-
 """
 
 
@@ -91,10 +90,10 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    
+
     # Traverse through the nltk tree and check the label
     # Loop through recursively
-    
+
     list_of_np_chunks = []
     if isinstance(tree, nltk.Tree):
         # If the label is "NP" and any subtrees do not contain "NP" within it, add the tree to the list of chunks
@@ -104,7 +103,6 @@ def np_chunk(tree):
             list_of_np_chunks.extend(np_chunk(subtree))
             
     return list_of_np_chunks
-
 
 def containsAlpha(word):
     """
