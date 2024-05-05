@@ -91,17 +91,16 @@ def np_chunk(tree):
     noun phrases as subtrees.
     """
 
-    # Traverse through the nltk tree and check the label
-    # Loop through recursively
-
     list_of_np_chunks = []
-    if isinstance(tree, nltk.Tree):
-        # If the label is "NP" and any subtrees do not contain "NP" within it, add the tree to the list of chunks
-        if tree.label() == "NP" and not any(subtree.label() == "NP" for subtree in tree):
-            list_of_np_chunks.append(tree)
-        for subtree in tree:
-            list_of_np_chunks.extend(np_chunk(subtree))
-            
+   
+    for s in tree.subtrees(lambda t: t.label() == "NP"):  # Restrict subtrees with the label NP
+        # Check if they contain any NPs in them.
+        nps = s.subtrees(lambda t: t.label() == "NP")
+        next(nps)  # subtress function also returns the root node. We need to skip it.
+        len = sum(1 for _ in nps)  # Since subtree returns a generator, use sum to find the length
+        if len == 0:
+            list_of_np_chunks.append(s)
+
     return list_of_np_chunks
 
 def containsAlpha(word):
